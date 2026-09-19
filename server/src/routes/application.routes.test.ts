@@ -1,12 +1,14 @@
 import request from 'supertest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { createApplicationMock } = vi.hoisted(() => ({
+const { createApplicationMock, getApplicationsMock } = vi.hoisted(() => ({
   createApplicationMock: vi.fn(),
+  getApplicationsMock: vi.fn(),
 }));
 
 vi.mock('../services/application.service.js', () => ({
   createApplication: createApplicationMock,
+  getApplications: getApplicationsMock,
 }));
 
 import app from '../app.js';
@@ -78,5 +80,38 @@ describe('POST /api/applications', () => {
     );
 
     expect(createApplicationMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('GET /api/applications', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.DEV_USER_ID = 'b74ed226-9d3c-4659-8bc7-1bafca691acc';
+  });
+
+  it('fetches applications for the user', async () => {
+    const applications = [
+      {
+        id: 'application-123',
+        userId: 'b74ed226-9d3c-4659-8bc7-1bafca691acc',
+        company: 'Google',
+        role: 'Frontend Developer',
+        location: 'Bangalore',
+        source: 'Manual',
+        status: 'Applied',
+        appliedAt: '2026-09-10T00:00:00.000Z',
+        url: 'https://example.com/job',
+        notes: 'Applied through careers page',
+        sourceMessageId: null,
+      },
+    ];
+
+    // Mock the getApplications function to return the test applications
+    getApplicationsMock.mockResolvedValue(applications);
+    const response = await request(app).get('/api/applications');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(applications);
+    expect(getApplicationsMock).toHaveBeenCalledWith('b74ed226-9d3c-4659-8bc7-1bafca691acc');
   });
 });

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { db } from '../db.js';
 import { applications } from '../db/schema.js';
 import { createApplicationSchema } from '../schemas/application.schema.js';
+import { eq } from 'drizzle-orm';
 
 export type CreateApplicationInput = z.infer<typeof createApplicationSchema> & {
   userId: string;
@@ -24,4 +25,8 @@ export async function createApplication(input: CreateApplicationInput) {
     .returning();
 
   return application;
+}
+
+export async function getApplications(userId: string) {
+  return db.select().from(applications).where(eq(applications.userId, userId));
 }
