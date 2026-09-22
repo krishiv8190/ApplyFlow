@@ -1,16 +1,23 @@
 import request from 'supertest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { createApplicationMock, getApplicationsMock, getApplicationByIdMock } = vi.hoisted(() => ({
+const {
+  createApplicationMock,
+  getApplicationsMock,
+  getApplicationByIdMock,
+  updateApplicationMock,
+} = vi.hoisted(() => ({
   createApplicationMock: vi.fn(),
   getApplicationsMock: vi.fn(),
   getApplicationByIdMock: vi.fn(),
+  updateApplicationMock: vi.fn(),
 }));
 
 vi.mock('../services/application.service.js', () => ({
   createApplication: createApplicationMock,
   getApplications: getApplicationsMock,
   getApplicationById: getApplicationByIdMock,
+  updateApplication: updateApplicationMock,
 }));
 
 import app from '../app.js';
@@ -177,5 +184,94 @@ describe('GET /api/applications/:id', () => {
     });
 
     expect(getApplicationByIdMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('PATCH /api/applications/:id', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.DEV_USER_ID = 'b74ed226-9d3c-4659-8bc7-1bafca691acc';
+  });
+
+  it('updates an application', async () => {
+    const updatedApplication = {
+      id: 'f6f7941f-f7ea-4454-838e-31a17a840144',
+      userId: 'b74ed226-9d3c-4659-8bc7-1bafca691acc',
+      company: 'Google',
+      role: 'Frontend Developer',
+      location: 'Bangalore',
+      source: 'Manual',
+      status: 'Interview',
+      appliedAt: '2026-09-10T00:00:00.000Z',
+      url: 'https://example.com/job',
+      notes: 'Technical round scheduled',
+      sourceMessageId: null,
+    };
+
+    updateApplicationMock.mockResolvedValue(updatedApplication);
+
+    const response = await request(app)
+      .patch('/api/applications/f6f7941f-f7ea-4454-838e-31a17a840144')
+      .send({
+        status: 'Interview',
+        notes: 'Technical round scheduled',
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(updatedApplication);
+
+    expect(updateApplicationMock).toHaveBeenCalledWith(
+      'f6f7941f-f7ea-4454-838e-31a17a840144',
+      'b74ed226-9d3c-4659-8bc7-1bafca691acc',
+      {
+        status: 'Interview',
+        notes: 'Technical round scheduled',
+      },
+    );
+  });
+
+  it('returns 400 for invalid update data', async () => {
+    const response = await request(app)
+      .patch('/api/applications/f6f7941f-f7ea-4454-838e-31a17a840144')
+      .send({
+        status: 'InvalidStatus',
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        error: 'Validation failed',
+      }),
+    );
+
+    expect(updateApplicationMock).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 for an invalid application ID', async () => {
+    const response = await request(app).patch('/api/applications/not-a-uuid').send({
+      status: 'Interview',
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      error: 'Invalid application ID',
+    });
+
+    expect(updateApplicationMock).not.toHaveBeenCalled();
+  });
+
+  it('returns 404 when the application does not exist', async () => {
+    updateApplicationMock.mockResolvedValue(undefined);
+
+    const response = await request(app)
+      .patch('/api/applications/00000000-0000-0000-0000-000000000000')
+      .send({
+        status: 'Interview',
+      });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({
+      error: 'Application not found',
+    });
   });
 });

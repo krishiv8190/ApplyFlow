@@ -3,6 +3,7 @@ import { db } from '../db.js';
 import { applications } from '../db/schema.js';
 import { createApplicationSchema } from '../schemas/application.schema.js';
 import { eq, and } from 'drizzle-orm';
+import { updateApplicationSchema } from '../schemas/update-application.schema.js';
 
 export type CreateApplicationInput = z.infer<typeof createApplicationSchema> & {
   userId: string;
@@ -37,6 +38,23 @@ export async function getApplicationById(applicationId: string, userId: string) 
     .from(applications)
     .where(and(eq(applications.id, applicationId), eq(applications.userId, userId)))
     .limit(1);
+
+  return application;
+}
+
+export async function updateApplication(
+  applicationId: string,
+  userId: string,
+  input: z.infer<typeof updateApplicationSchema>,
+) {
+  const [application] = await db
+    .update(applications)
+    .set({
+      ...input,
+      appliedAt: input.appliedAt ? new Date(input.appliedAt) : undefined,
+    })
+    .where(and(eq(applications.id, applicationId), eq(applications.userId, userId)))
+    .returning();
 
   return application;
 }
