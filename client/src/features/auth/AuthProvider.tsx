@@ -1,4 +1,4 @@
-import { createContext, type PropsWithChildren, useContext, useState } from 'react';
+import { type PropsWithChildren, useState } from 'react';
 
 import {
   loginUser,
@@ -8,15 +8,7 @@ import {
   type RegisterInput,
 } from '../../api/auth';
 
-interface AuthContextValue {
-  user: AuthUser | null;
-  token: string | null;
-  login: (input: LoginInput) => Promise<void>;
-  register: (input: RegisterInput) => Promise<void>;
-  logout: () => void;
-}
-
-const AuthContext = createContext<AuthContextValue | null>(null);
+import { AuthContext } from './AuthContext';
 
 const TOKEN_KEY = 'applyflow_token';
 const USER_KEY = 'applyflow_user';
@@ -51,7 +43,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   async function register(input: RegisterInput) {
     const registeredUser = await registerUser(input);
-
     setUser(registeredUser);
   }
 
@@ -64,26 +55,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        login,
-        register,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ user, token, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider.');
-  }
-
-  return context;
 }

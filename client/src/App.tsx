@@ -2,8 +2,9 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
 import { ComingSoonPage } from './components/feedback/ComingSoonPage';
 import { AppShell } from './components/layout/AppShell';
-import { useAuth } from './features/auth/AuthContext';
+import { useAuth } from './features/auth/useAuth';
 import { LoginPage } from './features/auth/LoginPage';
+import { RegisterPage } from './features/auth/RegisterPage';
 import { ApplicationDetailsPage } from './features/applications/ApplicationDetailsPage';
 import { ApplicationProvider } from './features/applications/ApplicationProvider';
 import { ApplicationsPage } from './features/applications/ApplicationsPage';
@@ -31,7 +32,7 @@ export default function App() {
     <Routes>
       {/* Public routes */}
       <Route element={<LoginPage />} path="/login" />
-
+      <Route element={<RegisterPage />} path="/register" />
       {/* Protected routes */}
       <Route element={<ProtectedLayout />}>
         <Route element={<DashboardPage />} path="/" />
