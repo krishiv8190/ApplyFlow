@@ -1,46 +1,63 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
 import { ComingSoonPage } from './components/feedback/ComingSoonPage';
 import { AppShell } from './components/layout/AppShell';
-import { ApplicationsPage } from './features/applications/ApplicationsPage';
-import { ApplicationProvider } from './features/applications/ApplicationProvider';
-import { CreateApplicationPage } from './features/applications/CreateApplicationPage';
-import { DashboardPage } from './features/dashboard/DashboardPage';
+import { useAuth } from './features/auth/AuthContext';
+import { LoginPage } from './features/auth/LoginPage';
 import { ApplicationDetailsPage } from './features/applications/ApplicationDetailsPage';
+import { ApplicationProvider } from './features/applications/ApplicationProvider';
+import { ApplicationsPage } from './features/applications/ApplicationsPage';
+import { CreateApplicationPage } from './features/applications/CreateApplicationPage';
 import { EditApplicationPage } from './features/applications/EditApplicationPage';
-function App() {
+import { DashboardPage } from './features/dashboard/DashboardPage';
+
+function ProtectedLayout() {
+  const { user } = useAuth();
+  const location = useLocation();
+
+  if (!user) {
+    return <Navigate replace state={{ from: location.pathname }} to="/login" />;
+  }
+
   return (
     <ApplicationProvider>
-      <AppShell>
-        <Routes>
-          <Route element={<DashboardPage />} path="/" />
-          <Route element={<ApplicationsPage />} path="/applications" />
-          <Route element={<EditApplicationPage />} path="/applications/:id/edit" />
-          <Route element={<ApplicationDetailsPage />} path="/applications/:id" />
-          <Route element={<CreateApplicationPage />} path="/applications/new" />
-          <Route
-            element={
-              <ComingSoonPage
-                description="Track every interview round, meeting time, and outcome as your process progresses."
-                title="Interviews"
-              />
-            }
-            path="/interviews"
-          />
-          <Route
-            element={
-              <ComingSoonPage
-                description="Connection preferences, Gmail sync controls, and account settings will live here."
-                title="Settings"
-              />
-            }
-            path="/settings"
-          />
-          <Route element={<Navigate replace to="/" />} path="*" />
-        </Routes>
-      </AppShell>
+      <AppShell />
     </ApplicationProvider>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <Routes>
+      {/* Public routes */}
+      <Route element={<LoginPage />} path="/login" />
+
+      {/* Protected routes */}
+      <Route element={<ProtectedLayout />}>
+        <Route element={<DashboardPage />} path="/" />
+
+        <Route element={<ApplicationsPage />} path="/applications" />
+
+        <Route element={<ApplicationDetailsPage />} path="/applications/:id" />
+
+        <Route element={<EditApplicationPage />} path="/applications/:id/edit" />
+
+        <Route element={<CreateApplicationPage />} path="/applications/new" />
+
+        <Route
+          element={
+            <ComingSoonPage description="Interview tracking is coming soon." title="Interviews" />
+          }
+          path="/interviews"
+        />
+
+        <Route
+          element={<ComingSoonPage description="Settings are coming soon." title="Settings" />}
+          path="/settings"
+        />
+      </Route>
+
+      <Route element={<Navigate replace to="/login" />} path="*" />
+    </Routes>
+  );
+}

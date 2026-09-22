@@ -2,8 +2,22 @@ import type { CreateApplicationInput, JobApplication } from '../features/applica
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem('applyflow_token');
+
+  if (!token) {
+    return {};
+  }
+
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}
+
 export async function getApplications(): Promise<JobApplication[]> {
-  const response = await fetch(`${API_BASE_URL}/applications`);
+  const response = await fetch(`${API_BASE_URL}/applications`, {
+    headers: getAuthHeaders(),
+  });
 
   if (!response.ok) {
     throw new Error('Failed to fetch applications');
@@ -17,6 +31,7 @@ export async function createApplication(input: CreateApplicationInput): Promise<
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...getAuthHeaders(),
     },
     body: JSON.stringify({
       ...input,
@@ -39,6 +54,7 @@ export async function updateApplication(
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
+      ...getAuthHeaders(),
     },
     body: JSON.stringify({
       ...input,
@@ -60,6 +76,7 @@ export async function updateApplication(
 export async function deleteApplication(applicationId: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/applications/${applicationId}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
 
   if (!response.ok) {
