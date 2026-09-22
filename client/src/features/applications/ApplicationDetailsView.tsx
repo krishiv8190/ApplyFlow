@@ -14,10 +14,14 @@ function formatAppliedDate(date: string) {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-  }).format(new Date(`${date}T00:00:00`));
+  }).format(new Date(date));
 }
 
-export function ApplicationDetailsView({ application, onDelete, onEdit }: ApplicationDetailsViewProps) {
+export function ApplicationDetailsView({
+  application,
+  onDelete,
+  onEdit,
+}: ApplicationDetailsViewProps) {
   return (
     <div className="mx-auto max-w-5xl">
       <Link
@@ -74,10 +78,10 @@ export function ApplicationDetailsView({ application, onDelete, onEdit }: Applic
 
         <article className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 sm:p-6">
           <h2 className="font-semibold text-white">Job posting</h2>
-          {application.jobUrl ? (
+          {application.url ? (
             <a
               className="mt-3 inline-flex text-sm font-medium text-indigo-300 transition hover:text-indigo-200"
-              href={application.jobUrl}
+              href={application.url}
               rel="noreferrer"
               target="_blank"
             >

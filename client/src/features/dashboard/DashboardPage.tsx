@@ -9,7 +9,7 @@ function formatAppliedDate(date: string) {
   return new Intl.DateTimeFormat('en-IN', {
     day: 'numeric',
     month: 'short',
-  }).format(new Date(`${date}T00:00:00`));
+  }).format(new Date(date));
 }
 
 export function DashboardPage() {

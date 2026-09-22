@@ -3,7 +3,8 @@ import { createContext, useContext } from 'react';
 import type { CreateApplicationInput, JobApplication } from './types';
 
 interface ApplicationContextValue {
-  addApplication: (input: CreateApplicationInput) => void;
+  addApplication: (input: CreateApplicationInput) => Promise<void>;
+  editApplication: (applicationId: string, input: Partial<CreateApplicationInput>) => Promise<void>;
   applications: JobApplication[];
 }
 

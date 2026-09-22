@@ -6,7 +6,8 @@ import { ApplicationsPage } from './features/applications/ApplicationsPage';
 import { ApplicationProvider } from './features/applications/ApplicationProvider';
 import { CreateApplicationPage } from './features/applications/CreateApplicationPage';
 import { DashboardPage } from './features/dashboard/DashboardPage';
-
+import { ApplicationDetailsPage } from './features/applications/ApplicationDetailsPage';
+import { EditApplicationPage } from './features/applications/EditApplicationPage';
 function App() {
   return (
     <ApplicationProvider>
@@ -14,6 +15,8 @@ function App() {
         <Routes>
           <Route element={<DashboardPage />} path="/" />
           <Route element={<ApplicationsPage />} path="/applications" />
+          <Route element={<EditApplicationPage />} path="/applications/:id/edit" />
+          <Route element={<ApplicationDetailsPage />} path="/applications/:id" />
           <Route element={<CreateApplicationPage />} path="/applications/new" />
           <Route
             element={

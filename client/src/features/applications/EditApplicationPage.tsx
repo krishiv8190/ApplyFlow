@@ -1,11 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { z } from 'zod';
 
-import { applicationSources, applicationStatuses } from './types';
 import { useApplications } from './ApplicationContext';
+import { applicationSources, applicationStatuses } from './types';
 
 const applicationFormSchema = z.object({
   company: z.string().trim().min(2, 'Enter a company name.'),
@@ -20,51 +20,81 @@ const applicationFormSchema = z.object({
 
 type ApplicationFormValues = z.infer<typeof applicationFormSchema>;
 
-const defaultValues: ApplicationFormValues = {
-  company: '',
-  role: '',
-  location: '',
-  source: 'Manual',
-  status: 'Applied',
-  appliedAt: new Date().toISOString().slice(0, 10),
-  url: '',
-  notes: '',
-};
-
 const inputClassName =
   'mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20';
 
-export function CreateApplicationPage() {
-  const { addApplication } = useApplications();
+export function EditApplicationPage() {
+  const { id } = useParams<{ id: string }>();
+  const { applications, editApplication } = useApplications();
   const navigate = useNavigate();
+
+  const application = applications.find((existingApplication) => existingApplication.id === id);
+
   const {
-    formState: { errors },
+    formState: { errors, isSubmitting },
     handleSubmit,
     register,
   } = useForm<ApplicationFormValues>({
-    defaultValues,
+    defaultValues: application
+      ? {
+          company: application.company,
+          role: application.role,
+          location: application.location,
+          source: application.source,
+          status: application.status,
+          appliedAt: application.appliedAt.slice(0, 10),
+          url: application.url ?? '',
+          notes: application.notes ?? '',
+        }
+      : undefined,
     resolver: zodResolver(applicationFormSchema),
   });
 
-  function onSubmit(values: ApplicationFormValues) {
-    addApplication({
+  if (!application) {
+    return (
+      <div className="mx-auto max-w-3xl">
+        <Link
+          className="text-sm font-medium text-indigo-300 transition hover:text-indigo-200"
+          to="/applications"
+        >
+          ← Back to applications
+        </Link>
+
+        <div className="mt-8 rounded-xl border border-slate-800 bg-slate-900/60 p-8">
+          <h1 className="text-xl font-semibold text-white">Application not found</h1>
+          <p className="mt-2 text-sm text-slate-400">
+            The application may have been deleted or the URL may be invalid.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  async function onSubmit(values: ApplicationFormValues) {
+    if (!application) {
+      return;
+    }
+
+    await editApplication(application.id, {
       ...values,
       url: values.url || undefined,
       notes: values.notes || undefined,
     });
-    navigate('/applications');
+
+    navigate(`/applications/${application.id}`);
   }
 
   return (
     <div className="mx-auto max-w-3xl">
       <header className="border-b border-slate-800 pb-8">
         <p className="text-sm font-medium text-indigo-300">APPLICATIONS</p>
+
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-          Add an application
+          Edit application
         </h1>
+
         <p className="mt-2 text-sm leading-6 text-slate-400 sm:text-base">
-          Record an opportunity manually. Gmail will eventually populate these details
-          automatically.
+          Update the details for {application.company}.
         </p>
       </header>
 
@@ -83,6 +113,7 @@ export function CreateApplicationPage() {
               placeholder="e.g. Vercel"
             />
           </FormField>
+
           <FormField error={errors.role?.message} label="Role" name="role">
             <input
               {...register('role')}
@@ -91,6 +122,7 @@ export function CreateApplicationPage() {
               placeholder="e.g. Frontend Engineer"
             />
           </FormField>
+
           <FormField error={errors.location?.message} label="Location" name="location">
             <input
               {...register('location')}
@@ -99,6 +131,7 @@ export function CreateApplicationPage() {
               placeholder="e.g. Remote or Bengaluru, India"
             />
           </FormField>
+
           <FormField error={errors.source?.message} label="Source" name="source">
             <select {...register('source')} className={inputClassName} id="source">
               {applicationSources.map((source) => (
@@ -108,6 +141,7 @@ export function CreateApplicationPage() {
               ))}
             </select>
           </FormField>
+
           <FormField error={errors.appliedAt?.message} label="Applied date" name="appliedAt">
             <input
               {...register('appliedAt')}
@@ -116,6 +150,7 @@ export function CreateApplicationPage() {
               type="date"
             />
           </FormField>
+
           <FormField error={errors.status?.message} label="Status" name="status">
             <select {...register('status')} className={inputClassName} id="status">
               {applicationStatuses.map((status) => (
@@ -154,15 +189,17 @@ export function CreateApplicationPage() {
         <div className="mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-slate-800 pt-5">
           <Link
             className="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-300 transition hover:bg-slate-800 hover:text-white"
-            to="/applications"
+            to={`/applications/${application.id}`}
           >
             Cancel
           </Link>
+
           <button
-            className="rounded-lg bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-950 transition hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-950"
+            className="rounded-lg bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-950 transition hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isSubmitting}
             type="submit"
           >
-            Add application
+            {isSubmitting ? 'Saving...' : 'Save changes'}
           </button>
         </div>
       </form>
@@ -183,7 +220,9 @@ function FormField({ children, error, label, name }: FormFieldProps) {
       <label className="text-sm font-medium text-slate-200" htmlFor={name}>
         {label}
       </label>
+
       {children}
+
       {error ? (
         <p className="mt-1.5 text-sm text-rose-300" role="alert">
           {error}

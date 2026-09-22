@@ -22,7 +22,7 @@ export interface JobApplication {
   status: ApplicationStatus;
   appliedAt: string;
   source: ApplicationSource;
-  jobUrl?: string;
+  url?: string;
   notes?: string;
 }
 

@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 import { StatusBadge } from './StatusBadge';
 import type { JobApplication } from './types';
 
@@ -10,7 +12,7 @@ function formatAppliedDate(date: string) {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-  }).format(new Date(`${date}T00:00:00`));
+  }).format(new Date(date));
 }
 
 export function ApplicationTable({ applications }: ApplicationTableProps) {
@@ -42,20 +44,28 @@ export function ApplicationTable({ applications }: ApplicationTableProps) {
             </th>
           </tr>
         </thead>
+
         <tbody className="divide-y divide-slate-800">
           {applications.map((application) => (
             <tr className="transition hover:bg-slate-800/50" key={application.id}>
               <td className="whitespace-nowrap px-5 py-4 sm:px-6">
-                <p className="font-medium text-slate-100">{application.company}</p>
-                <p className="mt-1 text-slate-400">{application.role}</p>
-                <p className="mt-1 text-xs text-slate-500">{application.location}</p>
+                <Link className="block" to={`/applications/${application.id}`}>
+                  <p className="font-medium text-slate-100 transition hover:text-indigo-300">
+                    {application.company}
+                  </p>
+                  <p className="mt-1 text-slate-400">{application.role}</p>
+                  <p className="mt-1 text-xs text-slate-500">{application.location}</p>
+                </Link>
               </td>
+
               <td className="whitespace-nowrap px-5 py-4">
                 <StatusBadge status={application.status} />
               </td>
+
               <td className="whitespace-nowrap px-5 py-4 text-slate-400">
                 {formatAppliedDate(application.appliedAt)}
               </td>
+
               <td className="whitespace-nowrap px-5 py-4 text-slate-400 sm:px-6">
                 {application.source}
               </td>
