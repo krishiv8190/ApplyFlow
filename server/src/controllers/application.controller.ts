@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+import type { Response } from 'express';
+import type { AuthenticatedRequest } from '../middleware/auth.js';
 import {
   createApplication,
   deleteApplication,
@@ -8,9 +9,9 @@ import {
 } from '../services/application.service.js';
 import { z } from 'zod';
 
-export async function createApplicationController(req: Request, res: Response) {
+export async function createApplicationController(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = process.env.DEV_USER_ID;
+    const userId = req.userId;
 
     if (!userId) {
       return res.status(500).json({
@@ -33,9 +34,9 @@ export async function createApplicationController(req: Request, res: Response) {
   }
 }
 
-export async function getApplicationsController(req: Request, res: Response) {
+export async function getApplicationsController(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = process.env.DEV_USER_ID;
+    const userId = req.userId;
 
     if (!userId) {
       return res.status(500).json({
@@ -53,9 +54,9 @@ export async function getApplicationsController(req: Request, res: Response) {
   }
 }
 
-export async function getApplicationByIdController(req: Request, res: Response) {
+export async function getApplicationByIdController(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = process.env.DEV_USER_ID;
+    const userId = req.userId;
 
     if (!userId) {
       return res.status(500).json({
@@ -94,9 +95,9 @@ export async function getApplicationByIdController(req: Request, res: Response) 
   }
 }
 
-export async function updateApplicationController(req: Request, res: Response) {
+export async function updateApplicationController(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = process.env.DEV_USER_ID;
+    const userId = req.userId;
 
     if (!userId) {
       return res.status(500).json({
@@ -137,9 +138,9 @@ export async function updateApplicationController(req: Request, res: Response) {
   }
 }
 
-export async function deleteApplicationController(req: Request, res: Response) {
+export async function deleteApplicationController(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = process.env.DEV_USER_ID;
+    const userId = req.userId;
 
     if (!userId) {
       return res.status(500).json({

@@ -10,8 +10,10 @@ import {
 
 import { validateCreateApplication } from '../middleware/validate.js';
 import { validateUpdateApplication } from '../middleware/validate-update-application.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = Router();
+router.use(authenticate);
 
 router.post('/', validateCreateApplication, createApplicationController);
 
