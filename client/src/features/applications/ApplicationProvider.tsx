@@ -1,6 +1,11 @@
 import { type PropsWithChildren, useEffect, useReducer } from 'react';
 
-import { createApplication, getApplications, updateApplication } from '../../api/applications';
+import {
+  createApplication,
+  deleteApplication,
+  getApplications,
+  updateApplication,
+} from '../../api/applications';
 import { ApplicationContext } from './ApplicationContext';
 import type { CreateApplicationInput, JobApplication } from './types';
 
@@ -20,6 +25,10 @@ type ApplicationAction =
   | {
       type: 'applicationUpdated';
       application: JobApplication;
+    }
+  | {
+      type: 'applicationDeleted';
+      applicationId: string;
     };
 function applicationReducer(state: ApplicationState, action: ApplicationAction): ApplicationState {
   switch (action.type) {
@@ -38,6 +47,12 @@ function applicationReducer(state: ApplicationState, action: ApplicationAction):
           existingApplication.id === action.application.id
             ? action.application
             : existingApplication,
+        ),
+      };
+    case 'applicationDeleted':
+      return {
+        applications: state.applications.filter(
+          (application) => application.id !== action.applicationId,
         ),
       };
   }
@@ -78,11 +93,22 @@ export function ApplicationProvider({ children }: PropsWithChildren) {
       application,
     });
   }
+
+  async function removeApplication(applicationId: string) {
+    await deleteApplication(applicationId);
+
+    dispatch({
+      type: 'applicationDeleted',
+      applicationId,
+    });
+  }
+
   return (
     <ApplicationContext.Provider
       value={{
         addApplication,
         editApplication,
+        removeApplication,
         applications: state.applications,
       }}
     >

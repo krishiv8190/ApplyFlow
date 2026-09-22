@@ -58,3 +58,12 @@ export async function updateApplication(
 
   return application;
 }
+
+export async function deleteApplication(applicationId: string, userId: string) {
+  const [application] = await db
+    .delete(applications)
+    .where(and(eq(applications.id, applicationId), eq(applications.userId, userId)))
+    .returning();
+
+  return application;
+}

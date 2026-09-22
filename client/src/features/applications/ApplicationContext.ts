@@ -5,6 +5,7 @@ import type { CreateApplicationInput, JobApplication } from './types';
 interface ApplicationContextValue {
   addApplication: (input: CreateApplicationInput) => Promise<void>;
   editApplication: (applicationId: string, input: Partial<CreateApplicationInput>) => Promise<void>;
+  removeApplication: (applicationId: string) => Promise<void>;
   applications: JobApplication[];
 }
 

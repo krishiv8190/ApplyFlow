@@ -3,11 +3,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
   createApplicationMock,
+  deleteApplicationMock,
   getApplicationsMock,
   getApplicationByIdMock,
   updateApplicationMock,
 } = vi.hoisted(() => ({
   createApplicationMock: vi.fn(),
+  deleteApplicationMock: vi.fn(),
   getApplicationsMock: vi.fn(),
   getApplicationByIdMock: vi.fn(),
   updateApplicationMock: vi.fn(),
@@ -15,6 +17,7 @@ const {
 
 vi.mock('../services/application.service.js', () => ({
   createApplication: createApplicationMock,
+  deleteApplication: deleteApplicationMock,
   getApplications: getApplicationsMock,
   getApplicationById: getApplicationByIdMock,
   updateApplication: updateApplicationMock,
@@ -268,6 +271,70 @@ describe('PATCH /api/applications/:id', () => {
       .send({
         status: 'Interview',
       });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({
+      error: 'Application not found',
+    });
+  });
+});
+
+describe('DELETE /api/applications/:id', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.DEV_USER_ID = 'b74ed226-9d3c-4659-8bc7-1bafca691acc';
+  });
+
+  it('deletes an application', async () => {
+    const deletedApplication = {
+      id: 'f6f7941f-f7ea-4454-838e-31a17a840144',
+      userId: 'b74ed226-9d3c-4659-8bc7-1bafca691acc',
+      company: 'Google',
+      role: 'Frontend Developer',
+      location: 'Bangalore',
+      source: 'Manual',
+      status: 'Interview',
+      appliedAt: '2026-09-10T00:00:00.000Z',
+      url: 'https://example.com/job',
+      notes: 'Technical round scheduled',
+      sourceMessageId: null,
+    };
+
+    deleteApplicationMock.mockResolvedValue(deletedApplication);
+
+    const response = await request(app).delete(
+      '/api/applications/f6f7941f-f7ea-4454-838e-31a17a840144',
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      message: 'Application deleted successfully',
+      application: deletedApplication,
+    });
+
+    expect(deleteApplicationMock).toHaveBeenCalledWith(
+      'f6f7941f-f7ea-4454-838e-31a17a840144',
+      'b74ed226-9d3c-4659-8bc7-1bafca691acc',
+    );
+  });
+
+  it('returns 400 for an invalid application ID', async () => {
+    const response = await request(app).delete('/api/applications/not-a-uuid');
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      error: 'Invalid application ID',
+    });
+
+    expect(deleteApplicationMock).not.toHaveBeenCalled();
+  });
+
+  it('returns 404 when the application does not exist', async () => {
+    deleteApplicationMock.mockResolvedValue(undefined);
+
+    const response = await request(app).delete(
+      '/api/applications/00000000-0000-0000-0000-000000000000',
+    );
 
     expect(response.status).toBe(404);
     expect(response.body).toEqual({

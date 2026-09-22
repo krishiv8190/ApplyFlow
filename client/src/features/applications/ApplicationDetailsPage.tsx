@@ -5,8 +5,7 @@ import { ApplicationDetailsView } from './ApplicationDetailsView';
 export function ApplicationDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { applications } = useApplications();
-
+  const { applications, removeApplication } = useApplications();
   const application = applications.find((application) => application.id === id);
 
   if (!application) {
@@ -32,8 +31,17 @@ export function ApplicationDetailsPage() {
   return (
     <ApplicationDetailsView
       application={application}
-      onDelete={() => {
-        // Delete will be implemented when the DELETE API is added.
+      onDelete={async () => {
+        const confirmed = window.confirm(
+          `Are you sure you want to delete the application for ${application.company}?`,
+        );
+
+        if (!confirmed) {
+          return;
+        }
+
+        await removeApplication(application.id);
+        navigate('/applications');
       }}
       onEdit={() => {
         navigate(`/applications/${application.id}/edit`);

@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import {
   createApplicationController,
+  deleteApplicationController,
   getApplicationByIdController,
   getApplicationsController,
   updateApplicationController,
@@ -16,8 +17,10 @@ router.post('/', validateCreateApplication, createApplicationController);
 
 router.get('/', getApplicationsController);
 
-router.get('/:id', getApplicationByIdController);
-
 router.patch('/:id', validateUpdateApplication, updateApplicationController);
+
+router.delete('/:id', deleteApplicationController);
+
+router.get('/:id', getApplicationByIdController);
 
 export default router;
