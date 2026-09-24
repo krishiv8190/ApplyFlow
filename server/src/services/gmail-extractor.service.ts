@@ -81,6 +81,7 @@ function extractRole(message: ParsedGmailMessage): string | null {
   }
 
   const patterns = [
+    /for the position\s+(.+?)(?:\.|\n|$)/i,
     /position of (.+?)(?:\s+and|\s+with|\.\s|$)/i,
     /for the following role:\s*(.+?)(?:\.|\n|$)/i,
     /for the role of (.+?)(?:\s+at|\.\s|$)/i,
@@ -94,7 +95,11 @@ function extractRole(message: ParsedGmailMessage): string | null {
     const match = text.match(pattern);
 
     if (match?.[1]) {
-      return match[1].trim();
+      const role = match[1].trim();
+
+      if (role.length <= 255) {
+        return role;
+      }
     }
   }
 

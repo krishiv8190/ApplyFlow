@@ -3,6 +3,7 @@ import {
   getApplicationByCompanyAndRole,
   getApplicationBySourceMessageId,
   getApplicationsByUser,
+  isGmailMessageExcluded,
   updateApplication,
 } from './application.service.js';
 import { classifyGmailMessage } from './gmail-classifier.service.js';
@@ -53,140 +54,169 @@ function normalizeCompanyName(company: string) {
 export async function syncGmailApplications(userId: string) {
   const messages = await listJobEmails(userId);
 
-  console.log('[Gmail Sync] Starting classification for', messages.length, 'messages');
+  // console.log('[Gmail Sync] Starting classification for', messages.length, 'messages');
 
   const results = [];
 
   for (const message of messages) {
-    const classified = classifyGmailMessage(message);
+    try {
+      const excluded = await isGmailMessageExcluded(message.messageId, userId);
 
-    console.log('[Gmail Sync] Classification:', {
-      from: message.from,
-      subject: message.subject,
-      status: classified?.status ?? null,
-    });
+      if (excluded) {
+        results.push({
+          messageId: message.messageId,
+          action: 'skipped',
+          reason: 'excluded',
+        });
 
-    if (!classified) {
-      continue;
-    }
+        continue;
+      }
 
-    const extracted = extractGmailApplication(message);
+      const classified = classifyGmailMessage(message);
 
-    console.log('[Gmail Sync] Extraction:', {
-      from: message.from,
-      subject: message.subject,
-      company: extracted.company,
-      role: extracted.role,
-    });
+      // console.log('[Gmail Sync] Classification:', {
+      //   from: message.from,
+      //   subject: message.subject,
+      //   status: classified?.status ?? null,
+      // });
 
-    if (!extracted.company) {
-      continue;
-    }
+      if (!classified) {
+        continue;
+      }
 
-    const existingMessage = await getApplicationBySourceMessageId(message.messageId, userId);
+      const extracted = extractGmailApplication(message);
 
-    if (existingMessage) {
+      // console.log('[Gmail Sync] Extraction:', {
+      //   from: message.from,
+      //   subject: message.subject,
+      //   company: extracted.company,
+      //   role: extracted.role,
+      // });
+
+      if (!extracted.company) {
+        continue;
+      }
+
+      const existingMessage = await getApplicationBySourceMessageId(message.messageId, userId);
+
+      if (existingMessage) {
+        results.push({
+          messageId: message.messageId,
+          action: 'skipped',
+          applicationId: existingMessage.id,
+        });
+
+        continue;
+      }
+
+      if (extracted.role) {
+        const existingApplication = await getApplicationByCompanyAndRole(
+          extracted.company,
+          extracted.role,
+          userId,
+        );
+
+        if (existingApplication) {
+          const shouldUpdate = shouldUpdateStatus(existingApplication.status, classified.status);
+
+          if (shouldUpdate) {
+            const updatedApplication = await updateApplication(existingApplication.id, userId, {
+              status: classified.status,
+            });
+
+            results.push({
+              messageId: message.messageId,
+              action: 'updated',
+              applicationId: updatedApplication?.id,
+            });
+          } else {
+            results.push({
+              messageId: message.messageId,
+              action: 'skipped',
+              applicationId: existingApplication.id,
+            });
+          }
+
+          continue;
+        }
+      }
+
+      if (!extracted.role) {
+        const userApplications = await getApplicationsByUser(userId);
+
+        const matchingApplications = userApplications.filter(
+          (application) =>
+            normalizeCompanyName(application.company) === normalizeCompanyName(extracted.company!),
+        );
+
+        if (matchingApplications.length === 1) {
+          const existingApplication = matchingApplications[0];
+
+          if (!existingApplication) {
+            continue;
+          }
+
+          const shouldUpdate = shouldUpdateStatus(existingApplication.status, classified.status);
+
+          if (shouldUpdate) {
+            const updatedApplication = await updateApplication(existingApplication.id, userId, {
+              status: classified.status,
+            });
+
+            results.push({
+              messageId: message.messageId,
+              action: 'updated',
+              applicationId: updatedApplication?.id,
+            });
+          } else {
+            results.push({
+              messageId: message.messageId,
+              action: 'skipped',
+              applicationId: existingApplication.id,
+            });
+          }
+
+          continue;
+        }
+      }
+
+      if (!extracted.role) {
+        continue;
+      }
+
+      const application = await createApplication({
+        userId,
+        company: extracted.company,
+        role: extracted.role,
+        source: 'Gmail',
+        status: classified.status,
+        appliedAt: extracted.appliedAt,
+        url: undefined,
+        notes: `Imported from Gmail: ${message.subject}`,
+        sourceMessageId: message.messageId,
+      });
+
+      results.push({
+        messageId: message.messageId,
+        action: 'created',
+        applicationId: application.id,
+      });
+    } catch (error) {
+      console.error('[Gmail Sync] Failed to process message:', {
+        messageId: message.messageId,
+        from: message.from,
+        subject: message.subject,
+        error,
+      });
+
       results.push({
         messageId: message.messageId,
         action: 'skipped',
-        applicationId: existingMessage.id,
+        reason: 'processing_error',
       });
 
       continue;
     }
-
-    if (extracted.role) {
-      const existingApplication = await getApplicationByCompanyAndRole(
-        extracted.company,
-        extracted.role,
-        userId,
-      );
-
-      if (existingApplication) {
-        const shouldUpdate = shouldUpdateStatus(existingApplication.status, classified.status);
-
-        if (shouldUpdate) {
-          const updatedApplication = await updateApplication(existingApplication.id, userId, {
-            status: classified.status,
-          });
-
-          results.push({
-            messageId: message.messageId,
-            action: 'updated',
-            applicationId: updatedApplication?.id,
-          });
-        } else {
-          results.push({
-            messageId: message.messageId,
-            action: 'skipped',
-            applicationId: existingApplication.id,
-          });
-        }
-
-        continue;
-      }
-    }
-
-    if (!extracted.role) {
-      const userApplications = await getApplicationsByUser(userId);
-
-      const matchingApplications = userApplications.filter(
-        (application) =>
-          normalizeCompanyName(application.company) === normalizeCompanyName(extracted.company!),
-      );
-
-      if (matchingApplications.length === 1) {
-        const existingApplication = matchingApplications[0];
-
-        if (!existingApplication) {
-          continue;
-        }
-
-        const shouldUpdate = shouldUpdateStatus(existingApplication.status, classified.status);
-
-        if (shouldUpdate) {
-          const updatedApplication = await updateApplication(existingApplication.id, userId, {
-            status: classified.status,
-          });
-
-          results.push({
-            messageId: message.messageId,
-            action: 'updated',
-            applicationId: updatedApplication?.id,
-          });
-        } else {
-          results.push({
-            messageId: message.messageId,
-            action: 'skipped',
-            applicationId: existingApplication.id,
-          });
-        }
-
-        continue;
-      }
-    }
-
-    if (!extracted.role) {
-      continue;
-    }
-
-    const application = await createApplication({
-      userId,
-      company: extracted.company,
-      role: extracted.role,
-      source: 'Gmail',
-      status: classified.status,
-      appliedAt: extracted.appliedAt,
-      url: undefined,
-      notes: `Imported from Gmail: ${message.subject}`,
-      sourceMessageId: message.messageId,
-    });
-
-    results.push({
-      messageId: message.messageId,
-      action: 'created',
-      applicationId: application.id,
-    });
   }
 
   console.log('[Gmail Sync] Results:', results);

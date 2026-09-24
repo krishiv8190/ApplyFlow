@@ -22,6 +22,20 @@
       "when": 1790234224571,
       "tag": "0002_keen_tattoo",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790249998250,
+      "tag": "0003_same_power_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790250142773,
+      "tag": "0004_dry_the_liberteens",
+      "breakpoints": true
     }
   ]
 }

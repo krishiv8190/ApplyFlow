@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { pgEnum, pgTable, text, timestamp, unique, uuid, varchar } from 'drizzle-orm/pg-core';
 export const applicationStatus = pgEnum('application_status', [
   'Applied',
   'Screening',
@@ -52,6 +52,28 @@ export const gmailConnections = pgTable('gmail_connections', {
     .notNull()
     .defaultNow(),
 });
+
+export const gmailSyncExclusions = pgTable(
+  'gmail_sync_exclusions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id),
+
+    messageId: text('message_id').notNull(),
+
+    createdAt: timestamp('created_at', {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    userMessageUnique: unique().on(table.userId, table.messageId),
+  }),
+);
 
 export const applications = pgTable('applications', {
   id: uuid('id').primaryKey().defaultRandom(),

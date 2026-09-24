@@ -1,0 +1,1 @@
+ALTER TABLE "gmail_sync_exclusions" ADD CONSTRAINT "gmail_sync_exclusions_user_id_message_id_unique" UNIQUE("user_id","message_id");

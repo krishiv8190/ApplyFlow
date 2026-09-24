@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { db } from '../db.js';
-import { applications } from '../db/schema.js';
+import { applications, gmailSyncExclusions } from '../db/schema.js';
 import { createApplicationSchema } from '../schemas/application.schema.js';
 import { eq, and } from 'drizzle-orm';
 import { updateApplicationSchema } from '../schemas/update-application.schema.js';
@@ -66,12 +66,28 @@ export async function updateApplication(
 }
 
 export async function deleteApplication(applicationId: string, userId: string) {
-  const [application] = await db
+  const application = await getApplicationById(applicationId, userId);
+
+  if (!application) {
+    return undefined;
+  }
+
+  if (application.source === 'Gmail' && application.sourceMessageId) {
+    await db
+      .insert(gmailSyncExclusions)
+      .values({
+        userId,
+        messageId: application.sourceMessageId,
+      })
+      .onConflictDoNothing();
+  }
+
+  const [deletedApplication] = await db
     .delete(applications)
     .where(and(eq(applications.id, applicationId), eq(applications.userId, userId)))
     .returning();
 
-  return application;
+  return deletedApplication;
 }
 
 export async function getApplicationBySourceMessageId(sourceMessageId: string, userId: string) {
@@ -113,4 +129,16 @@ export async function getApplicationsByCompany(company: string, userId: string) 
 
 export async function getApplicationsByUser(userId: string) {
   return db.select().from(applications).where(eq(applications.userId, userId));
+}
+
+export async function isGmailMessageExcluded(messageId: string, userId: string) {
+  const [exclusion] = await db
+    .select()
+    .from(gmailSyncExclusions)
+    .where(
+      and(eq(gmailSyncExclusions.messageId, messageId), eq(gmailSyncExclusions.userId, userId)),
+    )
+    .limit(1);
+
+  return Boolean(exclusion);
 }
