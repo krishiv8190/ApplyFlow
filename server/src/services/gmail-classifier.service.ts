@@ -94,13 +94,13 @@ export function classifyGmailMessage(message: ParsedGmailMessage): ClassifiedGma
     text.includes('received your application') ||
     text.includes('received and saved your application') ||
     text.includes('application has been submitted') ||
-    text.includes('you applied for')
+    text.includes('you applied for') ||
+    text.includes('received your resume')
   ) {
     return {
       message,
       status: 'Applied',
     };
   }
-
   return null;
 }
