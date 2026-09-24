@@ -7,6 +7,7 @@ import { updateApplicationSchema } from '../schemas/update-application.schema.js
 
 export type CreateApplicationInput = z.infer<typeof createApplicationSchema> & {
   userId: string;
+  sourceMessageId?: string;
 };
 
 export async function createApplication(input: CreateApplicationInput) {
@@ -22,8 +23,13 @@ export async function createApplication(input: CreateApplicationInput) {
       appliedAt: new Date(input.appliedAt),
       url: input.url,
       notes: input.notes,
+      sourceMessageId: input.sourceMessageId,
     })
     .returning();
+
+  if (!application) {
+    throw new Error('Failed to create application');
+  }
 
   return application;
 }
@@ -64,6 +70,36 @@ export async function deleteApplication(applicationId: string, userId: string) {
     .delete(applications)
     .where(and(eq(applications.id, applicationId), eq(applications.userId, userId)))
     .returning();
+
+  return application;
+}
+
+export async function getApplicationBySourceMessageId(sourceMessageId: string, userId: string) {
+  const [application] = await db
+    .select()
+    .from(applications)
+    .where(and(eq(applications.sourceMessageId, sourceMessageId), eq(applications.userId, userId)))
+    .limit(1);
+
+  return application;
+}
+
+export async function getApplicationByCompanyAndRole(
+  company: string,
+  role: string,
+  userId: string,
+) {
+  const [application] = await db
+    .select()
+    .from(applications)
+    .where(
+      and(
+        eq(applications.company, company),
+        eq(applications.role, role),
+        eq(applications.userId, userId),
+      ),
+    )
+    .limit(1);
 
   return application;
 }

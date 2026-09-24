@@ -30,6 +30,7 @@ type ApplicationAction =
       type: 'applicationDeleted';
       applicationId: string;
     };
+
 function applicationReducer(state: ApplicationState, action: ApplicationAction): ApplicationState {
   switch (action.type) {
     case 'applicationAdded':
@@ -41,6 +42,7 @@ function applicationReducer(state: ApplicationState, action: ApplicationAction):
       return {
         applications: action.applications,
       };
+
     case 'applicationUpdated':
       return {
         applications: state.applications.map((existingApplication) =>
@@ -49,6 +51,7 @@ function applicationReducer(state: ApplicationState, action: ApplicationAction):
             : existingApplication,
         ),
       };
+
     case 'applicationDeleted':
       return {
         applications: state.applications.filter(
@@ -63,16 +66,16 @@ export function ApplicationProvider({ children }: PropsWithChildren) {
     applications: [],
   });
 
+  async function loadApplications() {
+    const applications = await getApplications();
+
+    dispatch({
+      type: 'applicationsLoaded',
+      applications,
+    });
+  }
+
   useEffect(() => {
-    async function loadApplications() {
-      const applications = await getApplications();
-
-      dispatch({
-        type: 'applicationsLoaded',
-        applications,
-      });
-    }
-
     loadApplications();
   }, []);
 
@@ -109,6 +112,7 @@ export function ApplicationProvider({ children }: PropsWithChildren) {
         addApplication,
         editApplication,
         removeApplication,
+        loadApplications,
         applications: state.applications,
       }}
     >

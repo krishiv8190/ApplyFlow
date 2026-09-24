@@ -11,6 +11,7 @@ import { ApplicationsPage } from './features/applications/ApplicationsPage';
 import { CreateApplicationPage } from './features/applications/CreateApplicationPage';
 import { EditApplicationPage } from './features/applications/EditApplicationPage';
 import { DashboardPage } from './features/dashboard/DashboardPage';
+import { SettingsPage } from './features/settings/SettingsPage';
 
 function ProtectedLayout() {
   const { user } = useAuth();
@@ -52,10 +53,7 @@ export default function App() {
           path="/interviews"
         />
 
-        <Route
-          element={<ComingSoonPage description="Settings are coming soon." title="Settings" />}
-          path="/settings"
-        />
+        <Route element={<SettingsPage />} path="/settings" />
       </Route>
 
       <Route element={<Navigate replace to="/login" />} path="*" />

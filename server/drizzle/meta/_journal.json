@@ -15,6 +15,13 @@
       "when": 1788933522912,
       "tag": "0001_bent_otto_octavius",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790234224571,
+      "tag": "0002_keen_tattoo",
+      "breakpoints": true
     }
   ]
 }

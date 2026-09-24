@@ -6,6 +6,7 @@ interface ApplicationContextValue {
   addApplication: (input: CreateApplicationInput) => Promise<void>;
   editApplication: (applicationId: string, input: Partial<CreateApplicationInput>) => Promise<void>;
   removeApplication: (applicationId: string) => Promise<void>;
+  loadApplications: () => Promise<void>;
   applications: JobApplication[];
 }
 
