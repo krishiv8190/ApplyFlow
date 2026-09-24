@@ -13,7 +13,7 @@ export function ApplicationsPage() {
   const normalizedSearch = search.trim().toLowerCase();
   const filteredApplications = applications.filter((application) => {
     const matchesSearch = [application.company, application.role, application.location].some(
-      (value) => value.toLowerCase().includes(normalizedSearch),
+      (value) => value?.toLowerCase().includes(normalizedSearch),
     );
     const matchesStatus = statusFilter === 'All' || application.status === statusFilter;
 
