@@ -55,10 +55,7 @@ export async function gmailCallbackController(req: AuthenticatedRequest, res: Re
       refreshToken: gmailConnection.refreshToken,
     });
 
-    return res.status(200).json({
-      message: 'Gmail connected successfully',
-      email: gmailConnection.email,
-    });
+    return res.redirect('https://apply-flow-phi.vercel.app/settings');
   } catch (error) {
     console.error('Gmail OAuth callback failed:', error);
 
