@@ -6,12 +6,15 @@ import App from './App';
 import { AuthProvider } from './features/auth/AuthProvider';
 
 import './index.css';
+import { ThemeProvider } from './features/theme/ThemeProvider';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <ThemeProvider>
+          <App />
+        </ThemeProvider>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>,

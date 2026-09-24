@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 
 import { useApplications } from '../applications/ApplicationContext';
+import { SourceBadge } from '../applications/SourceBadge';
 import { StatusBadge } from '../applications/StatusBadge';
 import { applicationStatuses, type ApplicationStatus } from '../applications/types';
 
@@ -140,12 +141,16 @@ export function DashboardPage() {
             <h2 className="font-semibold text-white">Recent applications</h2>
 
             <p className="mt-1 text-sm text-slate-400">
-              Your five most recently added opportunities.
+              {recentApplications.length === 0
+                ? 'No applications added yet.'
+                : `Your ${recentApplications.length} most recently added ${
+                    recentApplications.length === 1 ? 'opportunity' : 'opportunities'
+                  }.`}
             </p>
           </div>
 
           <Link
-            className="text-sm font-medium text-indigo-300 transition hover:text-indigo-200"
+            className="text-sm font-medium text-indigo-300 transition hover:text-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900"
             to="/applications"
           >
             View all
@@ -161,7 +166,7 @@ export function DashboardPage() {
             </p>
 
             <Link
-              className="mt-5 inline-flex rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-400"
+              className="mt-5 inline-flex rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-950"
               to="/applications/new"
             >
               Add application
@@ -190,12 +195,18 @@ export function DashboardPage() {
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="application-table-body divide-y divide-slate-800">
                 {recentApplications.map((application) => (
-                  <tr className="transition hover:bg-slate-800/50" key={application.id}>
+                  <tr
+                    className="application-table-row group transition-colors hover:bg-slate-800/50"
+                    key={application.id}
+                  >
                     <td className="whitespace-nowrap px-5 py-4 sm:px-6">
-                      <Link className="block" to={`/applications/${application.id}`}>
-                        <p className="font-medium text-slate-100 transition hover:text-indigo-300">
+                      <Link
+                        className="block rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900"
+                        to={`/applications/${application.id}`}
+                      >
+                        <p className="font-medium text-slate-100 transition-colors group-hover:text-indigo-300">
                           {application.company}
                         </p>
 
@@ -211,8 +222,8 @@ export function DashboardPage() {
                       {formatAppliedDate(application.appliedAt)}
                     </td>
 
-                    <td className="whitespace-nowrap px-5 py-4 text-slate-400 sm:px-6">
-                      {application.source}
+                    <td className="whitespace-nowrap px-5 py-4 sm:px-6">
+                      <SourceBadge source={application.source} />
                     </td>
                   </tr>
                 ))}

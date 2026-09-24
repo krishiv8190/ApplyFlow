@@ -1,6 +1,5 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
-import { ComingSoonPage } from './components/feedback/ComingSoonPage';
 import { AppShell } from './components/layout/AppShell';
 import { useAuth } from './features/auth/useAuth';
 import { LoginPage } from './features/auth/LoginPage';
@@ -12,6 +11,7 @@ import { CreateApplicationPage } from './features/applications/CreateApplication
 import { EditApplicationPage } from './features/applications/EditApplicationPage';
 import { DashboardPage } from './features/dashboard/DashboardPage';
 import { SettingsPage } from './features/settings/SettingsPage';
+import { useEffect } from 'react';
 
 function ProtectedLayout() {
   const { user } = useAuth();
@@ -28,35 +28,79 @@ function ProtectedLayout() {
   );
 }
 
+function PageTitle() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      '/': 'Dashboard',
+      '/applications': 'Applications',
+      '/settings': 'Settings',
+    };
+
+    if (location.pathname === '/') {
+      document.title = 'ApplyFlow - Dashboard';
+      return;
+    }
+
+    if (location.pathname === '/applications') {
+      document.title = 'ApplyFlow - Applications';
+      return;
+    }
+
+    if (location.pathname === '/settings') {
+      document.title = 'ApplyFlow - Settings';
+      return;
+    }
+
+    if (location.pathname === '/applications/new') {
+      document.title = 'ApplyFlow - New Application';
+      return;
+    }
+
+    if (location.pathname.endsWith('/edit')) {
+      document.title = 'ApplyFlow - Edit Application';
+      return;
+    }
+
+    if (location.pathname.startsWith('/applications/')) {
+      document.title = 'ApplyFlow - Application';
+      return;
+    }
+
+    document.title = titles[location.pathname] ?? 'ApplyFlow';
+  }, [location.pathname]);
+
+  return null;
+}
+
 export default function App() {
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route element={<LoginPage />} path="/login" />
-      <Route element={<RegisterPage />} path="/register" />
-      {/* Protected routes */}
-      <Route element={<ProtectedLayout />}>
-        <Route element={<DashboardPage />} path="/" />
+    <>
+      <PageTitle />
 
-        <Route element={<ApplicationsPage />} path="/applications" />
+      <Routes>
+        {/* Public routes */}
+        <Route element={<LoginPage />} path="/login" />
+        <Route element={<RegisterPage />} path="/register" />
 
-        <Route element={<ApplicationDetailsPage />} path="/applications/:id" />
+        {/* Protected routes */}
+        <Route element={<ProtectedLayout />}>
+          <Route element={<DashboardPage />} path="/" />
 
-        <Route element={<EditApplicationPage />} path="/applications/:id/edit" />
+          <Route element={<ApplicationsPage />} path="/applications" />
 
-        <Route element={<CreateApplicationPage />} path="/applications/new" />
+          <Route element={<ApplicationDetailsPage />} path="/applications/:id" />
 
-        <Route
-          element={
-            <ComingSoonPage description="Interview tracking is coming soon." title="Interviews" />
-          }
-          path="/interviews"
-        />
+          <Route element={<EditApplicationPage />} path="/applications/:id/edit" />
 
-        <Route element={<SettingsPage />} path="/settings" />
-      </Route>
+          <Route element={<CreateApplicationPage />} path="/applications/new" />
 
-      <Route element={<Navigate replace to="/login" />} path="*" />
-    </Routes>
+          <Route element={<SettingsPage />} path="/settings" />
+        </Route>
+
+        <Route element={<Navigate replace to="/login" />} path="*" />
+      </Routes>
+    </>
   );
 }

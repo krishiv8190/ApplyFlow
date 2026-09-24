@@ -3,10 +3,12 @@ import { useEffect, useState } from 'react';
 import { getGmailAuthorizationUrl, getGmailStatus, syncGmailApplications } from '../../api/gmail';
 import { useApplications } from '../applications/ApplicationContext';
 import { useAuth } from '../auth/useAuth';
+import { useTheme } from '../theme/useTheme';
 
 export function SettingsPage() {
   const { user } = useAuth();
   const { loadApplications } = useApplications();
+  const { theme, toggleTheme } = useTheme();
 
   const [isConnecting, setIsConnecting] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -87,6 +89,7 @@ export function SettingsPage() {
         </p>
       </header>
 
+      {/* Gmail integration */}
       <section className="mt-8 rounded-xl border border-slate-800 bg-slate-900/60 p-6">
         <h2 className="font-semibold text-white">Gmail integration</h2>
 
@@ -154,6 +157,38 @@ export function SettingsPage() {
         {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
       </section>
 
+      {/* Appearance */}
+      <section className="mt-6 rounded-xl border border-slate-800 bg-slate-900/60 p-6">
+        <h2 className="font-semibold text-white">Appearance</h2>
+
+        <p className="mt-2 text-sm leading-6 text-slate-400">
+          Choose how ApplyFlow looks on your device.
+        </p>
+
+        <div className="mt-5 flex flex-col gap-4 rounded-lg border border-slate-800 bg-slate-950/50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-slate-200">
+              {theme === 'dark' ? 'Dark mode' : 'Light mode'}
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              {theme === 'dark'
+                ? 'Using the dark ApplyFlow theme.'
+                : 'Using the light ApplyFlow theme.'}
+            </p>
+          </div>
+
+          <button
+            className="inline-flex items-center justify-center rounded-lg border border-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-slate-800"
+            onClick={toggleTheme}
+            type="button"
+          >
+            Switch to {theme === 'dark' ? 'light' : 'dark'}
+          </button>
+        </div>
+      </section>
+
+      {/* Account */}
       <section className="mt-6 rounded-xl border border-slate-800 bg-slate-900/60 p-6">
         <h2 className="font-semibold text-white">Account</h2>
 

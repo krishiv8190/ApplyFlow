@@ -1,0 +1,12 @@
+<svg width="620" height="120" viewBox="0 0 620 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="14" y1="106" x2="106" y2="14" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4F46E5"/>
+      <stop offset="1" stop-color="#6366F1"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="108" height="108" rx="26" fill="url(#g)"/>
+  <path d="M32 86L52 45C55 39 65 39 68 45L88 86" stroke="white" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M58 56L76 86" stroke="#C7D2FE" stroke-width="9" stroke-linecap="round" opacity="0.9"/>
+  <text x="136" y="78" fill="#0F172A" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="54" font-weight="700" letter-spacing="-2">Apply<tspan fill="#6366F1">Flow</tspan></text>
+</svg>
