@@ -6,11 +6,14 @@ import gmailRouter from './routes/gmail.routes.js';
 
 const app = express();
 
-cors({
-  origin: ['http://localhost:5173', 'https://apply-flow-phi.vercel.app'],
-});
+app.use(
+  cors({
+    origin: ['http://localhost:5173', 'https://apply-flow-phi.vercel.app'],
+  }),
+);
 
 app.use(express.json());
+
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
@@ -20,7 +23,6 @@ app.get('/health', (req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/applications', applicationRouter);
-
 app.use('/api/gmail', gmailRouter);
 
 export default app;
