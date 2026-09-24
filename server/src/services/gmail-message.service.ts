@@ -35,21 +35,31 @@ export async function listJobEmails(userId: string) {
 
   const response = await gmail.users.messages.list({
     userId: 'me',
-    maxResults: 20,
-    q: ['newer_than:30d', '(application OR interview OR assessment OR recruiter OR hiring)'].join(
-      ' ',
-    ),
+    maxResults: 100,
+    q: 'newer_than:30d',
   });
 
   const messages = response.data.messages ?? [];
+
+  console.log('[Gmail Sync] Gmail returned:', messages.length, 'messages');
 
   const fullMessages = await Promise.all(
     messages.map((message) => (message.id ? getGmailMessage(userId, message.id) : null)),
   );
 
-  return fullMessages
+  const parsedMessages = fullMessages
     .map((message) => (message ? parseGmailMessage(message) : null))
     .filter((message) => message !== null);
+
+  console.log(
+    '[Gmail Sync] Parsed messages:',
+    parsedMessages.map((message) => ({
+      from: message.from,
+      subject: message.subject,
+    })),
+  );
+
+  return parsedMessages;
 }
 
 export async function getGmailMessage(userId: string, messageId: string) {

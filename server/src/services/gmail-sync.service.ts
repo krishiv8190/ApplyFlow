@@ -53,10 +53,18 @@ function normalizeCompanyName(company: string) {
 export async function syncGmailApplications(userId: string) {
   const messages = await listJobEmails(userId);
 
+  console.log('[Gmail Sync] Starting classification for', messages.length, 'messages');
+
   const results = [];
 
   for (const message of messages) {
     const classified = classifyGmailMessage(message);
+
+    console.log('[Gmail Sync] Classification:', {
+      from: message.from,
+      subject: message.subject,
+      status: classified?.status ?? null,
+    });
 
     if (!classified) {
       continue;
@@ -64,11 +72,17 @@ export async function syncGmailApplications(userId: string) {
 
     const extracted = extractGmailApplication(message);
 
+    console.log('[Gmail Sync] Extraction:', {
+      from: message.from,
+      subject: message.subject,
+      company: extracted.company,
+      role: extracted.role,
+    });
+
     if (!extracted.company) {
       continue;
     }
 
-    // 1. Check whether this exact Gmail message was already processed.
     const existingMessage = await getApplicationBySourceMessageId(message.messageId, userId);
 
     if (existingMessage) {
@@ -81,7 +95,6 @@ export async function syncGmailApplications(userId: string) {
       continue;
     }
 
-    // 2. If the email contains a role, try an exact company + role match.
     if (extracted.role) {
       const existingApplication = await getApplicationByCompanyAndRole(
         extracted.company,
@@ -114,8 +127,6 @@ export async function syncGmailApplications(userId: string) {
       }
     }
 
-    // 3. If the email has no role, try to match a unique application
-    // using the normalized company name.
     if (!extracted.role) {
       const userApplications = await getApplicationsByUser(userId);
 
@@ -155,12 +166,10 @@ export async function syncGmailApplications(userId: string) {
       }
     }
 
-    // 4. We need both company and role to create a new application.
     if (!extracted.role) {
       continue;
     }
 
-    // 5. Otherwise create a new application.
     const application = await createApplication({
       userId,
       company: extracted.company,
@@ -179,6 +188,8 @@ export async function syncGmailApplications(userId: string) {
       applicationId: application.id,
     });
   }
+
+  console.log('[Gmail Sync] Results:', results);
 
   return results;
 }
