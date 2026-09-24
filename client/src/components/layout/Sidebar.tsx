@@ -21,7 +21,11 @@ export function Sidebar() {
   return (
     <aside className="border-b border-slate-800 bg-slate-950 px-6 py-5 lg:sticky lg:top-0 lg:h-screen lg:self-start lg:flex lg:flex-col lg:border-r lg:border-b-0 lg:px-5 lg:py-7">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between lg:block">
-        <NavLink aria-label="ApplyFlow dashboard" className="inline-flex items-center" to="/">
+        <NavLink
+          aria-label="ApplyFlow dashboard"
+          className="inline-flex items-center"
+          to="/dashboard"
+        >
           <img
             alt="ApplyFlow"
             className="h-9 w-auto"

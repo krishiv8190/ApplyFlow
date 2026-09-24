@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
 import { AppShell } from './components/layout/AppShell';
@@ -10,8 +11,8 @@ import { ApplicationsPage } from './features/applications/ApplicationsPage';
 import { CreateApplicationPage } from './features/applications/CreateApplicationPage';
 import { EditApplicationPage } from './features/applications/EditApplicationPage';
 import { DashboardPage } from './features/dashboard/DashboardPage';
+import { LandingPage } from './features/landing/LandingPage';
 import { SettingsPage } from './features/settings/SettingsPage';
-import { useEffect } from 'react';
 
 function ProtectedLayout() {
   const { user } = useAuth();
@@ -33,25 +34,11 @@ function PageTitle() {
 
   useEffect(() => {
     const titles: Record<string, string> = {
-      '/': 'Dashboard',
-      '/applications': 'Applications',
-      '/settings': 'Settings',
+      '/': 'ApplyFlow',
+      '/dashboard': 'ApplyFlow - Dashboard',
+      '/applications': 'ApplyFlow - Applications',
+      '/settings': 'ApplyFlow - Settings',
     };
-
-    if (location.pathname === '/') {
-      document.title = 'ApplyFlow - Dashboard';
-      return;
-    }
-
-    if (location.pathname === '/applications') {
-      document.title = 'ApplyFlow - Applications';
-      return;
-    }
-
-    if (location.pathname === '/settings') {
-      document.title = 'ApplyFlow - Settings';
-      return;
-    }
 
     if (location.pathname === '/applications/new') {
       document.title = 'ApplyFlow - New Application';
@@ -81,12 +68,13 @@ export default function App() {
 
       <Routes>
         {/* Public routes */}
+        <Route element={<LandingPage />} path="/" />
         <Route element={<LoginPage />} path="/login" />
         <Route element={<RegisterPage />} path="/register" />
 
         {/* Protected routes */}
         <Route element={<ProtectedLayout />}>
-          <Route element={<DashboardPage />} path="/" />
+          <Route element={<DashboardPage />} path="/dashboard" />
 
           <Route element={<ApplicationsPage />} path="/applications" />
 
@@ -99,7 +87,7 @@ export default function App() {
           <Route element={<SettingsPage />} path="/settings" />
         </Route>
 
-        <Route element={<Navigate replace to="/login" />} path="*" />
+        <Route element={<Navigate replace to="/" />} path="*" />
       </Routes>
     </>
   );
