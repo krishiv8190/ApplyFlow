@@ -3,7 +3,7 @@ import { useTheme } from '../../features/theme/useTheme';
 import { useAuth } from '../../features/auth/useAuth';
 
 const navigationItems = [
-  { label: 'Dashboard', to: '/', end: true },
+  { label: 'Dashboard', to: '/dashboard', end: true },
   { label: 'Applications', to: '/applications', end: false },
   { label: 'Settings', to: '/settings', end: false },
 ];

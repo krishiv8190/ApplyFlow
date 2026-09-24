@@ -37,6 +37,18 @@ export function SettingsPage() {
     loadGmailStatus();
   }, []);
 
+  useEffect(() => {
+    function resetConnectingState() {
+      setIsConnecting(false);
+    }
+
+    window.addEventListener('pageshow', resetConnectingState);
+
+    return () => {
+      window.removeEventListener('pageshow', resetConnectingState);
+    };
+  }, []);
+
   async function handleConnectGmail() {
     setError('');
     setSyncMessage('');
