@@ -21,7 +21,7 @@ function extractCompany(message: ParsedGmailMessage): string | null {
     const senderName = fromMatch[1].trim();
 
     if (!isGenericSenderName(senderName)) {
-      return senderName;
+      return normalizeCompanyName(senderName);
     }
   }
 
@@ -39,12 +39,19 @@ function extractCompany(message: ParsedGmailMessage): string | null {
       }
 
       if (!isGenericSenderName(company)) {
-        return company.charAt(0).toUpperCase() + company.slice(1);
+        return normalizeCompanyName(company.charAt(0).toUpperCase() + company.slice(1));
       }
     }
   }
 
   return null;
+}
+
+function normalizeCompanyName(company: string) {
+  return company
+    .replace(/\b(global|services|inc|incorporated|ltd|limited|llc|corp|corporation)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function isGenericSenderName(name: string) {

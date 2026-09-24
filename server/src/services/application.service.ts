@@ -103,3 +103,14 @@ export async function getApplicationByCompanyAndRole(
 
   return application;
 }
+
+export async function getApplicationsByCompany(company: string, userId: string) {
+  return db
+    .select()
+    .from(applications)
+    .where(and(eq(applications.company, company), eq(applications.userId, userId)));
+}
+
+export async function getApplicationsByUser(userId: string) {
+  return db.select().from(applications).where(eq(applications.userId, userId));
+}
